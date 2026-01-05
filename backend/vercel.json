@@ -1,11 +1,6 @@
+```json
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "index.js",
-      "use": "@vercel/node"
-    }
-  ],
   "rewrites": [
     {
       "source": "/(.*)",
@@ -22,7 +17,7 @@
         },
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "*"
+          "value": "https://findatutor1.vercel.app"
         },
         {
           "key": "Access-Control-Allow-Methods",
@@ -36,3 +31,4 @@
     }
   ]
 }
+```
