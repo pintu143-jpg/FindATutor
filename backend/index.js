@@ -17,18 +17,27 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the React frontend app
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
 // Routes
 app.use('/api', apiRoutes);
 
-// Anything that doesn't match the above, send back index.html
-app.get(/(.*)/, (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-});
+// Serve static files from the React frontend app (Local Development Only)
+if (process.env.NODE_ENV !== 'production') {
+    app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+    // Anything that doesn't match the above, send back index.html
+    app.get(/(.*)/, (req, res) => {
+        // Skip API routes here to avoid conflicts if they were missed
+        if (!req.path.startsWith('/api')) {
+            res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+        }
+    });
+}
+
+// Start server only if not in Vercel environment (Vercel handles this)
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+export default app;

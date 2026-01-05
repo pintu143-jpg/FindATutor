@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, ArrowRight, ArrowLeft, MapPin, Monitor, User, BookOpen, GraduationCap, Users, IndianRupee } from 'lucide-react';
+import { getApiUrl } from '../config';
 
 interface WizardData {
   genderPref: string;
@@ -214,7 +215,7 @@ const StudentRequestWizard: React.FC<StudentRequestWizardProps> = ({ isOpen, onC
 
   const handleSubmit = async (finalData: WizardData) => {
     try {
-      const response = await fetch('/api/requests', {
+      const response = await fetch(getApiUrl('/api/requests'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
