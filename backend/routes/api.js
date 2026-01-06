@@ -1,9 +1,8 @@
 import express from 'express';
 import { checkConnection } from '../config/db.js';
+import StudentRequest from '../models/studentRequest.js';
 
 const router = express.Router();
-
-import pool from '../config/db.js';
 
 // Health check endpoint
 router.get('/health', async (req, res) => {
@@ -18,21 +17,28 @@ router.get('/health', async (req, res) => {
 // Create new student request
 router.post('/requests', async (req, res) => {
     try {
-        const { type, genderPref, mode, location, subject, level, budget } = req.body;
+        const { type, genderPref, mode, location, subject, level, budget, studentId, studentName } = req.body;
 
         // Basic validation
         if (!type || !mode || !location || !subject || !level || !budget) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        const [result] = await pool.query(
-            'INSERT INTO student_requests (type, gender_pref, mode, location, subject, level, budget) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [type, genderPref, mode, location, subject, level, budget]
-        );
+        const newRequest = await StudentRequest.create({
+            type,
+            genderPref: genderPref || 'Any',
+            mode,
+            location,
+            subject,
+            level,
+            budget,
+            studentId,
+            studentName
+        });
 
         res.status(201).json({
             message: 'Request created successfully',
-            id: result.insertId
+            id: newRequest._id
         });
     } catch (error) {
         console.error('Error creating request:', error);

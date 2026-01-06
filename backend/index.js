@@ -23,18 +23,8 @@ app.use(express.json());
 // Routes
 app.use('/api', apiRoutes);
 
-// Serve static files from the React frontend app (Local Development Only)
-if (process.env.NODE_ENV !== 'production') {
-    app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
-    // Anything that doesn't match the above, send back index.html
-    app.get(/(.*)/, (req, res) => {
-        // Skip API routes here to avoid conflicts if they were missed
-        if (!req.path.startsWith('/api')) {
-            res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-        }
-    });
-}
+// Serve static files from the React frontend app (Local Development Only) - REMOVED
+// Backend is now API-only. Frontend is served separately (e.g., via Vercel or Vite dev server).
 
 // Start server only if not in Vercel environment (Vercel handles this)
 if (process.env.NODE_ENV !== 'production') {

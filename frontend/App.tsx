@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/react';
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, GraduationCap, Users, ArrowRight, ArrowLeft, Star, Clock, CheckCircle2, BookOpen, Sparkles, Filter, LogOut, User as UserIcon, Shield, MessageCircle, LayoutDashboard, Sun, Moon, MapPin, Monitor, Building2, Quote, TrendingUp, Globe, Music, Briefcase, Bell, DollarSign, X, Check, Mail, Phone, Lock, ChevronRight, Home, Menu, Heart, Facebook, Twitter, Instagram, Linkedin, ArrowUp } from 'lucide-react';
 import { MOCK_TUTORS, MOCK_REQUESTS, MOCK_USERS, SUBJECTS, LEVELS, ADMIN_ID } from './constants';
+import { getApiUrl } from './config';
 import { ViewState, User, Tutor, ChatSession, ClassMode, StudentRequest, PlatformReview, ChatMessage, Review } from './types';
 import BecomeTutor from './components/BecomeTutor';
 import SmartMatchModal from './components/SmartMatchModal';
@@ -654,7 +655,61 @@ export default function App() {
   const handleTutorSubmitFeedback = (rating: number, content: string) => { const newReview: PlatformReview = { id: `rev-t-${Date.now()}`, studentId: currentUser?.id || 'anon-tutor', name: currentUser?.name || 'Anonymous Tutor', role: 'Tutor', image: currentUser?.avatar || 'https://ui-avatars.com/api/?name=Tutor', content: content, rating: rating, status: 'pending', date: new Date().toISOString() }; setPlatformReviews([newReview, ...platformReviews]); };
   const handleAddTutorReview = (review: Review) => { if (!selectedTutor) return; const updatedTutors = tutors.map(t => { if (t.id === selectedTutor.id) { const newReviewsList = [review, ...t.reviewsList]; const total = newReviewsList.reduce((acc, r) => acc + r.rating, 0); const avg = newReviewsList.length > 0 ? Number((total / newReviewsList.length).toFixed(1)) : 0; return { ...t, reviewsList: newReviewsList, rating: avg, reviews: newReviewsList.length }; } return t; }); setTutors(updatedTutors); const updatedSelectedTutor = updatedTutors.find(t => t.id === selectedTutor.id); if (updatedSelectedTutor) setSelectedTutor(updatedSelectedTutor); if (review.rating >= 4) { const platformReview: PlatformReview = { id: `pr-tutor-${Date.now()}`, studentId: currentUser?.id || 'guest', name: review.studentName, role: 'Student', image: currentUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(review.studentName)}&background=random`, content: `[Review for ${selectedTutor.name}] ${review.comment}`, rating: review.rating, status: 'approved', date: new Date().toISOString() }; setPlatformReviews(prev => [platformReview, ...prev]); } };
   const handleBecomeTutorSubmit = (tutorData: any) => { const existingTutorIds = tutors.map(t => t.id).filter(id => id.startsWith('T-') && !isNaN(Number(id.split('-')[1]))); let nextTutorNum = 1; if (existingTutorIds.length > 0) { const maxId = Math.max(...existingTutorIds.map(id => parseInt(id.split('-')[1], 10))); nextTutorNum = maxId + 1; } const nextTutorId = `T-${nextTutorNum.toString().padStart(3, '0')}`; const idToUse = currentUser ? currentUser.id : nextTutorId; const newTutor: Tutor = { ...tutorData, id: idToUse, status: 'pending' }; setTutors(prev => { const index = prev.findIndex(t => t.id === idToUse); if (index !== -1) { const updated = [...prev]; updated[index] = newTutor; return updated; } return [...prev, newTutor]; }); if (currentUser) { const updatedUser = { ...currentUser, role: 'tutor' as const }; setCurrentUser(updatedUser); setStudents(students.map(s => s.id === currentUser.id ? updatedUser : s)); setTimeout(() => setView('tutor-dashboard'), 100); } };
-  const handleWizardComplete = (data: any) => { const newRequest: StudentRequest = { id: `req-${Date.now()}`, studentId: currentUser?.id || 'guest', studentName: currentUser?.name || 'Guest Student', avatar: currentUser?.avatar || 'https://ui-avatars.com/api/?name=Guest', subject: data.subject, level: data.level, mode: data.mode === 'online' ? 'online' : 'offline', location: data.location, description: `Looking for ${data.type} tutor for ${data.subject}.`, budget: parseInt(data.budget) || 0, postedAt: new Date(), status: 'pending', isApproved: false }; setStudentRequests([newRequest, ...studentRequests]); setIsWizardOpen(false); setShowRequestSuccess(true); if (currentUser?.role === 'student') { setView('student-dashboard'); } };
+  const handleWizardComplete = async (data: any) => {
+    try {
+      const response = await fetch(getApiUrl('api/requests'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: data.type,
+          subject: data.subject,
+          level: data.level,
+          mode: data.mode === 'online' ? 'online' : 'offline',
+          location: data.location,
+          budget: parseInt(data.budget) || 0,
+          genderPref: 'Any',
+          studentId: currentUser?.id,
+          studentName: currentUser?.name
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        const newRequest: StudentRequest = {
+          id: `req-${Date.now()}`, // Fallback ID for UI, or use result.id if returned and consistent
+          studentId: currentUser?.id || 'guest',
+          studentName: currentUser?.name || 'Guest Student',
+          avatar: currentUser?.avatar || 'https://ui-avatars.com/api/?name=Guest',
+          subject: data.subject,
+          level: data.level,
+          mode: data.mode === 'online' ? 'online' : 'offline',
+          location: data.location,
+          description: `Looking for ${data.type} tutor for ${data.subject}.`,
+          budget: parseInt(data.budget) || 0,
+          postedAt: new Date(),
+          status: 'pending',
+          isApproved: false
+        };
+        setStudentRequests([newRequest, ...studentRequests]);
+        setIsWizardOpen(false);
+        setShowRequestSuccess(true);
+        if (currentUser?.role === 'student') {
+          setView('student-dashboard');
+        }
+      } else {
+        console.error('Failed to save request to server');
+        // Still update UI for demo purposes? Or show error? 
+        // Let's assume we want to fallback to local update if server fails for now, or just alert.
+        // For this task, persisting is the goal, so let's stick to success path.
+        alert('Failed to save request to server. Please check your connection.');
+      }
+    } catch (error) {
+      console.error('Error saving request:', error);
+      alert('An error occurred while saving your request.');
+    }
+  };
 
   const handleStudentDeleteRequest = (requestId: string) => {
     setStudentRequests(prev => prev.filter(req => req.id !== requestId));
