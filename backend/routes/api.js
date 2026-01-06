@@ -3,6 +3,8 @@ import { checkConnection } from '../config/db.js';
 
 const router = express.Router();
 
+import pool from '../config/db.js';
+
 // Health check endpoint
 router.get('/health', async (req, res) => {
     const dbStatus = await checkConnection();
@@ -23,7 +25,6 @@ router.post('/requests', async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        const pool = await import('../config/db.js').then(m => m.default);
         const [result] = await pool.query(
             'INSERT INTO student_requests (type, gender_pref, mode, location, subject, level, budget) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [type, genderPref, mode, location, subject, level, budget]

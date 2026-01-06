@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/react';
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, GraduationCap, Users, ArrowRight, ArrowLeft, Star, Clock, CheckCircle2, BookOpen, Sparkles, Filter, LogOut, User as UserIcon, Shield, MessageCircle, LayoutDashboard, Sun, Moon, MapPin, Monitor, Building2, Quote, TrendingUp, Globe, Music, Briefcase, Bell, DollarSign, X, Check, Mail, Phone, Lock, ChevronRight, Home, Menu, Heart, Facebook, Twitter, Instagram, Linkedin, ArrowUp } from 'lucide-react';
 import { MOCK_TUTORS, MOCK_REQUESTS, MOCK_USERS, SUBJECTS, LEVELS, ADMIN_ID } from './constants';
@@ -692,6 +693,7 @@ export default function App() {
 
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${darkMode ? 'dark bg-slate-900' : 'bg-slate-50'}`}>
+      <Analytics />
 
       {/* Modals & Nav (Unchanged from original) */}
       <SmartMatchModal isOpen={isSmartMatchOpen} onClose={() => setIsSmartMatchOpen(false)} onMatchesFound={handleSmartMatchFound} tutors={tutors} />
