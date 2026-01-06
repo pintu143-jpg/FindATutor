@@ -12,7 +12,7 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 const connectDB = async () => {
     try {
         // Fallback URI for direct deployment if env var is not set
-        const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://pintukumar3415_db_user:X4VOQNL06R4emwCW@findatutor1.lyzjdmg.mongodb.net/';
+        const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://pintukumar3415_db_user:X4VOQNL06R4emwCW@findatutor1.lyzjdmg.mongodb.net/Findatutor1';
         const conn = await mongoose.connect(MONGODB_URI);
         console.log(`MongoDB Connected: ${conn.connection.host}`);
         return true;
