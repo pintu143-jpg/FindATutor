@@ -104,7 +104,20 @@ const INITIAL_REVIEWS: PlatformReview[] = [
 ];
 
 export default function App() {
-  const [view, setView] = useState<ViewState>('home');
+  const [view, setView] = useState<ViewState>(() => {
+    const savedUser = localStorage.getItem('findatutor_user');
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        if (user.role === 'admin') {
+          return 'admin-dashboard';
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return 'home';
+  });
   const [previousView, setPreviousView] = useState<ViewState>('home');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('');
@@ -151,7 +164,18 @@ export default function App() {
   const [platformReviews, setPlatformReviews] = useState<PlatformReview[]>(INITIAL_REVIEWS);
   
   // User State
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem('findatutor_user');
+    if (savedUser) {
+      try {
+        return JSON.parse(savedUser);
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
+    }
+    return null;
+  });
   
   // Tutor Selection State
   const [selectedTutor, setSelectedTutor] = useState<Tutor | null>(null);
@@ -215,6 +239,15 @@ export default function App() {
     fetchUserChats();
     const interval = setInterval(fetchUserChats, 4000);
     return () => clearInterval(interval);
+  }, [currentUser]);
+
+  // Sync user session to localStorage
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('findatutor_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('findatutor_user');
+    }
   }, [currentUser]);
 
   // Timer for Notification (Toast)

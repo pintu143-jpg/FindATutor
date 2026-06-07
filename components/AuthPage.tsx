@@ -424,17 +424,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLogin, onNavigateHome, existingUs
             </p>
           </div>
           
-          {/* Demo Credentials Section */}
-          {activeTab === 'login' && (
-            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
-              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Quick Demo Login</p>
-              <div className="flex gap-2 justify-center flex-wrap">
-                <button onClick={() => fillDemoCredentials('student')} className="text-xs px-3 py-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded hover:bg-slate-50">Student Demo</button>
-                <button onClick={() => fillDemoCredentials('tutor')} className="text-xs px-3 py-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded hover:bg-slate-50">Tutor Demo</button>
-                <button onClick={() => fillDemoCredentials('admin')} className="text-xs px-3 py-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded hover:bg-slate-50 text-indigo-600 dark:text-indigo-400 font-medium">Admin Demo</button>
-              </div>
-            </div>
-          )}
+
 
         </div>
       </div>
