@@ -370,7 +370,7 @@ const TutorDashboard: React.FC<TutorDashboardProps> = ({
                             <span className="font-semibold text-slate-900 dark:text-white text-sm">
                                 {student ? `${student.name} (ID: ${student.id})` : 'Student Inquiry'}
                             </span>
-                            <span className="text-xs text-slate-400">{chat.updatedAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                            <span className="text-xs text-slate-400">{chat.updatedAt ? new Date(chat.updatedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}</span>
                          </div>
                          <p className="text-xs text-slate-600 dark:text-slate-300 truncate">{chat.lastMessagePreview}</p>
                       </div>

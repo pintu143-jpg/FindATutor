@@ -139,7 +139,7 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({
                       <div key={chat.id} className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border border-slate-100 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors cursor-pointer" onClick={onNavigateChat}>
                          <div className="flex justify-between items-start mb-1">
                             <span className="font-semibold text-slate-900 dark:text-white text-sm">Conversation</span>
-                            <span className="text-xs text-slate-400">{chat.updatedAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                            <span className="text-xs text-slate-400">{chat.updatedAt ? new Date(chat.updatedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : ''}</span>
                          </div>
                          <p className="text-xs text-slate-600 dark:text-slate-300 truncate">{chat.lastMessagePreview}</p>
                       </div>

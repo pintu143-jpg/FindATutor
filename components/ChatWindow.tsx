@@ -204,7 +204,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                           {info.name}
                       </h4>
                       <div className="flex flex-col items-end">
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-2 whitespace-nowrap">{session.updatedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-2 whitespace-nowrap">{session.updatedAt ? new Date(session.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>
                       </div>
                     </div>
                     {info.subtext && (
@@ -314,7 +314,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({
                       )}
                       <p className="text-sm">{msg.text}</p>
                       <p className={`text-[10px] mt-1 text-right opacity-60`}>
-                        {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                       </p>
                     </div>
                   </div>
