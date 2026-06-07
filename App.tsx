@@ -191,7 +191,7 @@ export default function App() {
     fetchInitialData();
   }, []);
 
-  // Load user-specific chats from the backend when user logs in
+  // Load user-specific chats from the backend when user logs in and poll every 4 seconds
   useEffect(() => {
     if (!currentUser) {
       setChatSessions([]);
@@ -200,12 +200,21 @@ export default function App() {
     const fetchUserChats = async () => {
       try {
         const loadedChats = await apiService.chats.getAll(currentUser.id);
-        setChatSessions(loadedChats);
+        setChatSessions(prev => {
+          // Avoid unnecessary rerenders if the data hasn't changed
+          if (JSON.stringify(prev) === JSON.stringify(loadedChats)) {
+            return prev;
+          }
+          return loadedChats;
+        });
       } catch (err) {
         console.error("Error fetching chat sessions:", err);
       }
     };
+
     fetchUserChats();
+    const interval = setInterval(fetchUserChats, 4000);
+    return () => clearInterval(interval);
   }, [currentUser]);
 
   // Timer for Notification (Toast)
@@ -690,11 +699,38 @@ export default function App() {
 
   const handleSendMessage = async (sessionId: string, text: string) => {
     if (!currentUser) return;
+
+    // Create optimistic message to update UI instantly
+    const optimisticMessage = {
+      id: `optimistic-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      senderId: currentUser.id,
+      text: text,
+      timestamp: new Date()
+    };
+
+    // Save current sessions to roll back on failure
+    const originalSessions = [...chatSessions];
+
+    // Optimistically update state
+    setChatSessions(prev => prev.map(s => {
+      if (s.id === sessionId) {
+        return {
+          ...s,
+          messages: [...s.messages, optimisticMessage],
+          lastMessagePreview: text,
+          updatedAt: new Date()
+        };
+      }
+      return s;
+    }));
+
     try {
       const updatedSession = await apiService.chats.sendMessage(sessionId, currentUser.id, text, activeSessionId);
       setChatSessions(prev => prev.map(s => s.id === sessionId ? updatedSession : s));
     } catch (err) {
       console.error("Error sending message:", err);
+      setChatSessions(originalSessions);
+      showToast("Error", "Failed to send message. Please check your connection.", "error");
     }
   };
 
