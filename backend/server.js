@@ -35,9 +35,51 @@ if (!mongoUri) {
   console.error("WARNING: MONGODB_URI is not set. Database operations will fail.");
 } else {
   mongoose.connect(mongoUri)
-    .then(() => console.log("MongoDB connected successfully."))
+    .then(() => {
+      console.log("MongoDB connected successfully.");
+      // Initial cleanup on startup
+      cleanupOldLogs();
+    })
     .catch(err => console.error("MongoDB connection error:", err));
 }
+
+// Background task to clean up login/logout logs older than 24 hours (1 day)
+const cleanupOldLogs = async () => {
+  try {
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const sessions = await ChatSessionModel.find({
+      'messages.senderId': 'admin-system-user',
+      'messages.text': { $regex: '^System Alert:' },
+      'messages.timestamp': { $lt: oneDayAgo }
+    });
+
+    for (const session of sessions) {
+      const originalLength = session.messages.length;
+      session.messages = session.messages.filter(msg => {
+        const isOldSystemLog = 
+          msg.senderId === 'admin-system-user' && 
+          msg.text.startsWith('System Alert:') && 
+          new Date(msg.timestamp) < oneDayAgo;
+        return !isOldSystemLog;
+      });
+
+      if (session.messages.length !== originalLength) {
+        if (session.messages.length > 0) {
+          session.lastMessagePreview = session.messages[session.messages.length - 1].text;
+        } else {
+          session.lastMessagePreview = '';
+        }
+        session.updatedAt = new Date();
+        await session.save();
+      }
+    }
+  } catch (error) {
+    console.error("Error cleaning up old chat logs:", error);
+  }
+};
+
+// Run cleanup job every hour
+setInterval(cleanupOldLogs, 60 * 60 * 1000);
 
 // ==========================================
 // AUTHENTICATION ENDPOINTS
